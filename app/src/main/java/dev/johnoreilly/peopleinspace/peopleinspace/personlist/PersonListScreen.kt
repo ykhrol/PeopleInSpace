@@ -11,7 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -22,6 +25,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -57,15 +62,20 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 const val PersonListTag = "PersonList"
+const val FeedbackButtonTag = "FeedbackButton"
 
 
 @Composable
 fun PersonListRoute(navigateToPerson: (Assignment) -> Unit, ) {
     val viewModel: PersonListViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     PersonListScreen(uiState, navigateToPerson, onRefresh = {
         viewModel.refresh()
+    }, onFeedbackClick = {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ykhrol/PeopleInSpace/issues"))
+        context.startActivity(intent)
     })
 
 }
@@ -74,7 +84,8 @@ fun PersonListRoute(navigateToPerson: (Assignment) -> Unit, ) {
 fun PersonListScreen(
     uiState: PersonListUiState,
     navigateToPerson: (Assignment) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onFeedbackClick: () -> Unit = {}
 ) {
     val refreshScope = rememberCoroutineScope()
     var refreshing by remember { mutableStateOf(false) }
@@ -95,6 +106,17 @@ fun PersonListScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent
                 ),
+                actions = {
+                    IconButton(
+                        onClick = onFeedbackClick,
+                        modifier = Modifier.testTag(FeedbackButtonTag)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(id = R.string.feedback)
+                        )
+                    }
+                },
                 modifier = Modifier.semantics { contentDescription = "PeopleInSpace" }
             )
         },

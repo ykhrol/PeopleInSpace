@@ -3,6 +3,7 @@ package dev.johnoreilly.peopleinspace
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import dev.johnoreilly.common.viewmodel.PersonListUiState
+import dev.johnoreilly.peopleinspace.personlist.FeedbackButtonTag
 import dev.johnoreilly.peopleinspace.personlist.PersonListScreen
 import dev.johnoreilly.peopleinspace.personlist.PersonListTag
 import org.junit.Rule
@@ -30,6 +31,15 @@ class PeopleInSpaceTest {
             rowNode.assertTextContains(person.name)
             rowNode.assertTextContains(person.craft)
         }
+    }
+
+    @Test
+    fun testFeedbackButtonIsDisplayed() {
+        composeTestRule.setContent {
+            PersonListScreen(uiState = PersonListUiState.Success(peopleInSpaceRepository.peopleList), navigateToPerson = {}, onRefresh = {})
+        }
+
+        composeTestRule.onNodeWithTag(FeedbackButtonTag).assertIsDisplayed()
     }
 
 }
